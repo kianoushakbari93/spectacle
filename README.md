@@ -1,20 +1,15 @@
 # Spectacle
 
-[![Build Status](https://travis-ci.org/eczarny/spectacle.svg?branch=master)](https://travis-ci.org/eczarny/spectacle)
-
 Easily organize windows without using a mouse.
 
-## Important Note
-
-**This project is not being actively maintained.** Unfortunately, after almost a decade of on-and-off development I can no longer dedicate the time needed to be a responsible maintainer of this project. Spectacle will remain available for download but please use at your own risk. The source code will continue to be free and open to anyone, so feel free to make Spectacle your own.
-
-Thanks to all the folks that have made Spectacle the first app they install a new Mac!
-
-_Spectacle users have recommended [Rectangle](https://github.com/rxhanson/Rectangle) as an open source alternative._
+Spectacle is a macOS window-management app driven entirely by keyboard
+shortcuts. This version has been modified to build and run natively on Apple
+Silicon (arm64).
 
 ## System requirements
 
-Spectacle [0.8.6][1] is the last version to support Mac OS X 10.7; future releases will only support 10.9 or greater. Folks wishing to stay on 10.7 should download [0.8.6][1]. Those looking for a version of Spectacle that supports 10.6 can still download [0.7][2].
+Spectacle runs on macOS 26 or later, natively on Apple Silicon (arm64) as well
+as Intel Macs.
 
 ## Keyboard Shortcuts
 
@@ -65,11 +60,11 @@ Spectacle remembers where every window was prior to executing a window action. T
 
 ### Spectacle is requesting access to use accessibility features
 
-Apple's [OS X Accessibility Protocol][4] makes Spectacle possible. This protocol allows assistive applications to _drive the user interface of another application running in OS X_. In order to do its job Spectacle must be granted access to use these accessibility features. Instructions to do so will be displayed if Spectacle determines it does not have sufficient privileges.
+Apple's [macOS Accessibility Protocol][4] makes Spectacle possible. This protocol allows assistive applications to _drive the user interface of another application running in macOS_. In order to do its job Spectacle must be granted access to use these accessibility features. Instructions to do so will be displayed if Spectacle determines it does not have sufficient privileges.
 
 ### Spectacle does not resize a particular window as expected
 
-OS X allows applications to place constraints on the size of its windows. This allows application developers to design their user interfaces without needing to worry about supporting every possible window dimension. In these cases Spectacle will not be able to resize those windows to fit into the exact dimensions intended by the shortcut used.
+macOS allows applications to place constraints on the size of its windows. This allows application developers to design their user interfaces without needing to worry about supporting every possible window dimension. In these cases Spectacle will not be able to resize those windows to fit into the exact dimensions intended by the shortcut used.
 
 As an example suppose a display has a 2880x1800 resolution and a window is being resized to fit the left half of the display. If the window has specified a minimum allowable width of 1600 pixels Spectacle will not be able to resize the window to fit the expected 1440 pixels. The constraints placed on windows will always be respected despite leading to potentially unexpected results; in this example Spectacle will resize the window's width to 1600 pixels.
 
@@ -81,7 +76,7 @@ To work around the limitations imposed on Terminal windows Spectacle will first 
 
 ### Spectacle does not work with all applications
 
-Most applications built with the Cocoa frameworks can be readily manipulated via the _OS X Accessibility Protocol_; allowing Spectacle to interact with nearly every window it encounters. Unfortunately this is not always the case. Spectacle will be unable to manipulate the windows of applications that build their user interfaces in unexpected ways.
+Most applications built with the Cocoa frameworks can be readily manipulated via the _macOS Accessibility Protocol_; allowing Spectacle to interact with nearly every window it encounters. Unfortunately this is not always the case. Spectacle will be unable to manipulate the windows of applications that build their user interfaces in unexpected ways.
 
 ## Building and running
 
@@ -151,7 +146,5 @@ Copyright (c) 2017 Eric Czarny.
 
 Spectacle should be accompanied by a LICENSE file containing the license relevant to this distribution.
 
-[1]: https://s3.amazonaws.com/spectacle/downloads/Spectacle+0.8.6.zip
-[2]: https://s3.amazonaws.com/spectacle/downloads/Spectacle+0.7.zip
 [3]: http://support.apple.com/kb/ht1343
 [4]: https://developer.apple.com/library/mac/documentation/Accessibility/Conceptual/AccessibilityMacOSX/OSXAXmodel.html
