@@ -142,7 +142,7 @@ The output should include `arm64`.
 
 # License
 
-Copyright (c) 2017 Eric Czarny.
+Copyright (c) 2017 Eric Czarny / 2026 Kianoush Akbari.
 
 Spectacle should be accompanied by a LICENSE file containing the license relevant to this distribution.
 
