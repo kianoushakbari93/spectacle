@@ -5,7 +5,6 @@
 @interface SpectacleAppDelegate : NSObject <NSApplicationDelegate, NSMenuDelegate>
 
 @property (nonatomic, strong) IBOutlet NSMenu *statusItemMenu;
-@property (nonatomic, strong) IBOutlet NSWindow *accessiblityAccessDialogWindow;
 @property (nonatomic, strong) IBOutlet NSMenuItem *moveToCenterShortcutMenuItem;
 @property (nonatomic, strong) IBOutlet NSMenuItem *moveToFullscreenShortcutMenuItem;
 @property (nonatomic, strong) IBOutlet NSMenuItem *moveToLeftShortcutMenuItem;
@@ -49,7 +48,5 @@
 - (IBAction)redoLastWindowAction:(id)sender;
 - (IBAction)disableOrEnableShortcutsForAnHour:(id)sender;
 - (IBAction)disableOrEnableShortcutsForApplication:(id)sender;
-
-- (IBAction)openSystemPreferences:(id)sender;
 
 @end

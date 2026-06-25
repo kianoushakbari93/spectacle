@@ -19,3 +19,10 @@ DerivedData
 
 Carthage/Build
 Carthage/Checkouts
+
+# macOS
+.DS_Store
+
+# Claude Code
+.claude/
+docs/
