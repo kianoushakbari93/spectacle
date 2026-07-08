@@ -11,14 +11,22 @@
     return nil;
   }
   NSData *content = [NSData dataWithContentsOfURL:shortcutsFileURL];
-  NSArray<NSDictionary *> *jsonArray = [NSJSONSerialization JSONObjectWithData:content
-                                                                       options:0
-                                                                         error:&error];
-  if (!jsonArray) {
+  if (!content) {
+    NSLog(@"Unable to read the shortcuts file at location: %@", [shortcutsFileURL path]);
+    return nil;
+  }
+  id jsonObject = [NSJSONSerialization JSONObjectWithData:content
+                                                  options:0
+                                                    error:&error];
+  if (!jsonObject) {
     NSLog(@"Deserializing shortcuts failed: %@", error.localizedDescription);
     return nil;
   }
-  return shortcutsFromJsonObject(jsonArray, action);
+  if (![jsonObject isKindOfClass:[NSArray class]]) {
+    NSLog(@"Deserializing shortcuts failed: expected an array at the top level of the shortcuts file");
+    return nil;
+  }
+  return shortcutsFromJsonObject(jsonObject, action);
 }
 
 - (void)storeShortcuts:(NSArray<SpectacleShortcut *> *)shortcuts
@@ -91,10 +99,18 @@ static NSArray<SpectacleShortcut *> *shortcutsFromJsonObject(NSArray<NSDictionar
 {
   NSMutableArray<SpectacleShortcut *> *shortcuts = [NSMutableArray new];
   for (NSDictionary *jsonObject in jsonArray) {
+    if (![jsonObject isKindOfClass:[NSDictionary class]]) {
+      NSLog(@"Skipping a malformed entry in the shortcuts file.");
+      continue;
+    }
     NSString *shortcutName = jsonObject[@"shortcut_name"];
     NSString *shortcutKeyBinding = jsonObject[@"shortcut_key_binding"];
+    if (![shortcutName isKindOfClass:[NSString class]]) {
+      NSLog(@"Skipping an entry with a missing or malformed name in the shortcuts file.");
+      continue;
+    }
     [shortcuts addObject:[[SpectacleShortcut alloc] initWithShortcutName:shortcutName
-                                                      shortcutKeyBinding:[shortcutKeyBinding isKindOfClass:[NSNull class]] ? nil : shortcutKeyBinding
+                                                      shortcutKeyBinding:[shortcutKeyBinding isKindOfClass:[NSString class]] ? shortcutKeyBinding : nil
                                                           shortcutAction:action]];
   }
   return shortcuts;

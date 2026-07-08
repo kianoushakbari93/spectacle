@@ -38,6 +38,9 @@ frontmostWindowElement:(SpectacleAccessibilityElement *)frontmostWindowElement
              frontmostWindowElement:frontmostWindowElement
                              action:action];
   CGRect movedWindowRect = [frontmostWindowElement rectOfElement];
+  if (CGRectIsNull(movedWindowRect)) {
+    return;
+  }
   CGRect previouslyMovedWindowRect = movedWindowRect;
   if (movedWindowRect.origin.x < visibleFrameOfScreen.origin.x) {
     movedWindowRect.origin.x = visibleFrameOfScreen.origin.x;

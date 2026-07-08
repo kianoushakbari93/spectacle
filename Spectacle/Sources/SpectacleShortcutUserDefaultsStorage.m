@@ -67,9 +67,14 @@
 {
   NSMutableArray<SpectacleShortcut *> *shortcuts = [NSMutableArray new];
   for (NSData *shortcutData in dictionary.allValues) {
+    NSError *error = nil;
     SpectacleShortcut *shortcut = [NSKeyedUnarchiver unarchivedObjectOfClass:[SpectacleShortcut class]
                                                                    fromData:shortcutData
-                                                                      error:nil];
+                                                                      error:&error];
+    if (!shortcut) {
+      NSLog(@"Unable to unarchive a stored shortcut, skipping it: %@", error.localizedDescription);
+      continue;
+    }
     [shortcuts addObject:[shortcut copyWithShortcutAction:action]];
   }
   return shortcuts;

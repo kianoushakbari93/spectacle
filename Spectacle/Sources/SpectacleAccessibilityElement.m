@@ -19,8 +19,14 @@
 + (SpectacleAccessibilityElement *)frontmostApplicationElement
 {
   NSRunningApplication *frontmostApplication = [NSWorkspace sharedWorkspace].frontmostApplication;
-  SpectacleAccessibilityElement *frontmostApplicationElement = [SpectacleAccessibilityElement new];
+  if (!frontmostApplication) {
+    return nil;
+  }
   AXUIElementRef underlyingElement = AXUIElementCreateApplication(frontmostApplication.processIdentifier);
+  if (underlyingElement == NULL) {
+    return nil;
+  }
+  SpectacleAccessibilityElement *frontmostApplicationElement = [SpectacleAccessibilityElement new];
   frontmostApplicationElement.underlyingElement = underlyingElement;
   CFRelease(underlyingElement);
   return frontmostApplicationElement;
@@ -43,6 +49,9 @@
 
 - (SpectacleAccessibilityElement *)elementWithAttribute:(CFStringRef)attribute
 {
+  if (_underlyingElement == NULL) {
+    return nil;
+  }
   SpectacleAccessibilityElement *newElement = nil;
   AXUIElementRef underlyingElement;
   AXError result = AXUIElementCopyAttributeValue(_underlyingElement, attribute, (CFTypeRef *)&underlyingElement);
@@ -58,12 +67,15 @@
 
 - (NSString *)stringValueOfAttribute:(CFStringRef)attribute
 {
-  if (CFGetTypeID(_underlyingElement) == AXUIElementGetTypeID()) {
+  if ((_underlyingElement != NULL) && (CFGetTypeID(_underlyingElement) == AXUIElementGetTypeID())) {
     CFTypeRef value;
     AXError result;
     result = AXUIElementCopyAttributeValue(_underlyingElement, attribute, &value);
     if (result == kAXErrorSuccess) {
-      return CFBridgingRelease(value);
+      if (CFGetTypeID(value) == CFStringGetTypeID()) {
+        return CFBridgingRelease(value);
+      }
+      CFRelease(value);
     } else {
       NSLog(@"There was a problem getting the string value of the specified attribute: %@ (error code %d)", attribute, result);
     }
@@ -73,12 +85,15 @@
 
 - (AXValueRef)valueOfAttribute:(CFStringRef)attribute type:(AXValueType)type
 {
-  if (CFGetTypeID(_underlyingElement) == AXUIElementGetTypeID()) {
+  if ((_underlyingElement != NULL) && (CFGetTypeID(_underlyingElement) == AXUIElementGetTypeID())) {
     CFTypeRef value;
     AXError result;
     result = AXUIElementCopyAttributeValue(_underlyingElement, attribute, (CFTypeRef *)&value);
-    if ((result == kAXErrorSuccess) && (AXValueGetType(value) == type)) {
-      return value;
+    if (result == kAXErrorSuccess) {
+      if (AXValueGetType(value) == type) {
+        return value;
+      }
+      CFRelease(value);
     } else {
       NSLog(@"There was a problem getting the value of the specified attribute: %@ (error code %d)", attribute, result);
     }
@@ -88,6 +103,10 @@
 
 - (void)setValue:(AXValueRef)value forAttribute:(CFStringRef)attribute
 {
+  if ((_underlyingElement == NULL) || (value == NULL)) {
+    NSLog(@"Unable to set the value of the specified attribute: %@", attribute);
+    return;
+  }
   AXError result = AXUIElementSetAttributeValue(_underlyingElement, attribute, (CFTypeRef *)value);
   if (result != kAXErrorSuccess) {
     NSLog(@"There was a problem setting the value of the specified attribute: %@ (error code %d)", attribute, result);
@@ -97,36 +116,45 @@
 - (CGRect)rectOfElement
 {
   CGRect result = CGRectNull;
-  CFTypeRef positionValue = [self valueOfAttribute:kAXPositionAttribute type:kAXValueCGPointType];
-  CFTypeRef sizeValue = [self valueOfAttribute:kAXSizeAttribute type:kAXValueCGSizeType];
+  AXValueRef positionValue = [self valueOfAttribute:kAXPositionAttribute type:kAXValueCGPointType];
+  AXValueRef sizeValue = [self valueOfAttribute:kAXSizeAttribute type:kAXValueCGSizeType];
   CGPoint position;
   CGSize size;
-  AXValueGetValue(positionValue, kAXValueCGPointType, (void *)&position);
-  AXValueGetValue(sizeValue, kAXValueCGSizeType, (void *)&size);
-  if ((positionValue != NULL) && (sizeValue != NULL)) {
-    CFRelease(positionValue);
-    CFRelease(sizeValue);
+  if ((positionValue != NULL)
+      && (sizeValue != NULL)
+      && AXValueGetValue(positionValue, kAXValueCGPointType, (void *)&position)
+      && AXValueGetValue(sizeValue, kAXValueCGSizeType, (void *)&size)) {
     result = CGRectMake(position.x, position.y, size.width, size.height);
+  }
+  if (positionValue != NULL) {
+    CFRelease(positionValue);
+  }
+  if (sizeValue != NULL) {
+    CFRelease(sizeValue);
   }
   return result;
 }
 
 - (void)setRectOfElement:(CGRect)rect
 {
-  AXValueRef positionRef;
-  AXValueRef sizeRef;
-  positionRef = AXValueCreate(kAXValueCGPointType, (const void *)&rect.origin);
-  sizeRef = AXValueCreate(kAXValueCGSizeType, (const void *)&rect.size);
-  [self setValue:sizeRef forAttribute:kAXSizeAttribute];
-  [self setValue:positionRef forAttribute:kAXPositionAttribute];
-  [self setValue:sizeRef forAttribute:kAXSizeAttribute];
-  CFRelease(positionRef);
-  CFRelease(sizeRef);
+  AXValueRef positionRef = AXValueCreate(kAXValueCGPointType, (const void *)&rect.origin);
+  AXValueRef sizeRef = AXValueCreate(kAXValueCGSizeType, (const void *)&rect.size);
+  if ((positionRef != NULL) && (sizeRef != NULL)) {
+    [self setValue:sizeRef forAttribute:kAXSizeAttribute];
+    [self setValue:positionRef forAttribute:kAXPositionAttribute];
+    [self setValue:sizeRef forAttribute:kAXSizeAttribute];
+  }
+  if (positionRef != NULL) {
+    CFRelease(positionRef);
+  }
+  if (sizeRef != NULL) {
+    CFRelease(sizeRef);
+  }
 }
 
 + (CGRect)normalizeCoordinatesOfRect:(CGRect)rect frameOfScreen:(CGRect)frameOfScreen
 {
-  CGRect frameOfScreenWithMenuBar = [[[NSScreen screens] objectAtIndex:0] frame];
+  CGRect frameOfScreenWithMenuBar = [[[NSScreen screens] firstObject] frame];
   rect.origin.y = frameOfScreen.size.height - NSMaxY(rect) + (frameOfScreenWithMenuBar.size.height - frameOfScreen.size.height);
   return rect;
 }
@@ -150,10 +178,13 @@
 
 - (void)setUnderlyingElement:(AXUIElementRef)underlyingElement
 {
+  if (underlyingElement != NULL) {
+    CFRetain(underlyingElement);
+  }
   if (_underlyingElement != NULL) {
     CFRelease(_underlyingElement);
   }
-  _underlyingElement = CFRetain(underlyingElement);
+  _underlyingElement = underlyingElement;
 }
 
 @end

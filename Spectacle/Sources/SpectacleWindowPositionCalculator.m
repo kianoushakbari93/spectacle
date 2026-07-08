@@ -66,7 +66,15 @@
                                                                    [_javaScriptEnvironment valueWithRect:visibleFrameOfSourceScreen],
                                                                    [_javaScriptEnvironment valueWithRect:visibleFrameOfDestinationScreen],
                                                                    ]];
-  return [SpectacleWindowPositionCalculationResult resultWithAction:action windowRect:[result toRect]];
+  CGRect calculatedWindowRect = [result toRect];
+  if (isnan(calculatedWindowRect.origin.x)
+      || isnan(calculatedWindowRect.origin.y)
+      || isnan(calculatedWindowRect.size.width)
+      || isnan(calculatedWindowRect.size.height)
+      || CGRectIsEmpty(calculatedWindowRect)) {
+    return nil;
+  }
+  return [SpectacleWindowPositionCalculationResult resultWithAction:action windowRect:calculatedWindowRect];
 }
 
 @end

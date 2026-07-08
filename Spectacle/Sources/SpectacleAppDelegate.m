@@ -260,13 +260,17 @@
 
 - (IBAction)disableOrEnableShortcutsForApplication:(id)sender
 {
-  NSRunningApplication *frontmostApplication = [NSWorkspace sharedWorkspace].frontmostApplication;
-  if ([_disabledApplications containsObject:frontmostApplication.bundleIdentifier]) {
-    [_disabledApplications removeObject:frontmostApplication.bundleIdentifier];
+  NSString *frontmostApplicationBundleIdentifier = [NSWorkspace sharedWorkspace].frontmostApplication.bundleIdentifier;
+  if (!frontmostApplicationBundleIdentifier) {
+    NSBeep();
+    return;
+  }
+  if ([_disabledApplications containsObject:frontmostApplicationBundleIdentifier]) {
+    [_disabledApplications removeObject:frontmostApplicationBundleIdentifier];
     [self enableShortcutsIfPermitted];
     self.disableShortcutsForApplicationMenuItem.state = NSControlStateValueOff;
   } else {
-    [_disabledApplications addObject:frontmostApplication.bundleIdentifier];
+    [_disabledApplications addObject:frontmostApplicationBundleIdentifier];
     [_shortcutManager unregisterShortcuts];
     self.disableShortcutsForApplicationMenuItem.state = NSControlStateValueOn;
   }
@@ -294,6 +298,9 @@
 
 - (void)enableStatusItem
 {
+  if (_statusItem) {
+    return;
+  }
   _statusItem = [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
   NSImage *statusImage = [NSBundle.mainBundle imageForResource:@"Spectacle Status Item"];
   [statusImage setTemplate:YES];
@@ -305,6 +312,7 @@
 - (void)disableStatusItem
 {
   [NSStatusBar.systemStatusBar removeStatusItem:_statusItem];
+  _statusItem = nil;
 }
 
 - (void)updateShortcutMenuItems

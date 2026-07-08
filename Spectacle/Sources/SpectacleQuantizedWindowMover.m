@@ -32,7 +32,7 @@ frontmostWindowElement:(SpectacleAccessibilityElement *)frontmostWindowElement
                 action:(SpectacleWindowAction *)action
 {
   CGRect movedWindowRect = [frontmostWindowElement rectOfElement];
-  if (!CGRectEqualToRect(movedWindowRect, windowRect)) {
+  if (!CGRectIsNull(movedWindowRect) && !CGRectEqualToRect(movedWindowRect, windowRect)) {
     CGRect adjustedWindowRect = windowRect;
     while (movedWindowRect.size.width > windowRect.size.width || movedWindowRect.size.height > windowRect.size.height) {
       if (movedWindowRect.size.width > windowRect.size.width) {

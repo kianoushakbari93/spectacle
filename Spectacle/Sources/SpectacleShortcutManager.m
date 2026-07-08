@@ -38,7 +38,7 @@ static EventHotKeyID currentShortcutID = {
       NSLog(@"Unable to add shortcut %@ as it already exists.", shortcutName);
       continue;
     }
-    currentShortcutID.id = ++currentShortcutID.id;
+    ++currentShortcutID.id;
     shortcutHolder = [[SpectacleShortcutHolder alloc] initWithShortcutID:currentShortcutID shortcut:shortcut];
     _registeredShortcutsByName[shortcutName] = _areShorcutsEnabled ? [self registerEventHotKey:shortcutHolder] : shortcutHolder;
   }
@@ -53,16 +53,15 @@ static EventHotKeyID currentShortcutID = {
     NSLog(@"Unable to update shortcut %@ as it does not exists.", shortcutName);
     return;
   }
-  if (_areShorcutsEnabled && [self unregisterEventHotKey:shortcutHolder]) {
+  if (_areShorcutsEnabled && ![self unregisterEventHotKey:shortcutHolder]) {
     NSLog(@"Unable to unregister event hot key for shortcut: %@", shortcutName);
     return;
   }
-  SpectacleShortcutHolder *registeredShortcutHolder = _areShorcutsEnabled ? [self registerEventHotKey:shortcutHolder] : shortcutHolder;
-  _registeredShortcutsByName[shortcutName] = [registeredShortcutHolder
-                                              copyWithShortcut:
-                                              [shortcut
-                                               copyWithShortcutAction:
-                                               shortcut.shortcutAction ?: shortcutHolder.shortcut.shortcutAction]];
+  SpectacleShortcut *updatedShortcut = [shortcut copyWithShortcutAction:
+                                        shortcut.shortcutAction ?: shortcutHolder.shortcut.shortcutAction];
+  SpectacleShortcutHolder *updatedShortcutHolder = [[SpectacleShortcutHolder alloc] initWithShortcutID:shortcutHolder.shortcutID
+                                                                                               shortcut:updatedShortcut];
+  _registeredShortcutsByName[shortcutName] = _areShorcutsEnabled ? [self registerEventHotKey:updatedShortcutHolder] : updatedShortcutHolder;
   [self storeShortcuts];
 }
 
