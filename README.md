@@ -4,11 +4,12 @@ Easily organize windows without using a mouse.
 
 Spectacle is a macOS window-management app driven entirely by keyboard
 shortcuts. This version has been modified to build and run natively on Apple
-Silicon (arm64).
+Silicon (arm64), and its preferences window is built with macOS's Liquid Glass
+design.
 
 ## System requirements
 
-Spectacle runs on macOS 26 or later, natively on Apple Silicon (arm64) as well
+Spectacle runs on macOS 27 or later, natively on Apple Silicon (arm64) as well
 as Intel Macs.
 
 ## Keyboard Shortcuts
